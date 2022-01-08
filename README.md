@@ -1,6 +1,6 @@
 # k8-harder-way
 
-Building a k8 bare metal cluster from scratch following https://github.com/kelseyhightower/kubernetes-the-hard-way
+Building a k8 bare metal cluster from scratch with Vagrant and Ansible by following https://github.com/kelseyhightower/kubernetes-the-hard-way
 
 ---
 ## Certificates
@@ -14,3 +14,9 @@ ansible-playbook create_certs.yml
 ```
 
 When vagrant machines are provisioned these certs are uploaded to the appropriate VMs.
+
+---
+## Kubernetes configuration files for auth
+https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
+
+https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/05-kubernetes-configuration-files.md

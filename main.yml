@@ -11,24 +11,56 @@
       copy:
         src: "crypto/{{ inventory_hostname }}.pem"
         dest: /etc/ssl
-      when: inventory_hostname in groups['kubernetes_node']
+      when: inventory_hostname in groups['worker']
 
     - name: Copy worker cert/key
       copy:
         src: "crypto/{{ inventory_hostname }}_privkey.pem"
         dest: /etc/ssl
-      when: inventory_hostname in groups['kubernetes_node']
+      when: inventory_hostname in groups['worker']
 
     - name: Copy controller keys
       copy:
         src: "{{ item.key_path }}"
         dest: /etc/ssl
-      when: inventory_hostname in groups['kubernetes_master'] and 'worker' not in item.key_path
+      when: inventory_hostname in groups['controller'] and 'worker' not in item.key_path
       with_items: "{{ certs }}"
 
     - name: Copy controller certs
       copy:
         src: "{{ item.cert_path }}"
         dest: /etc/ssl
-      when: inventory_hostname in groups['kubernetes_master'] and 'worker' not in item.cert_path
+      when: inventory_hostname in groups['controller'] and 'worker' not in item.cert_path
       with_items: "{{ certs }}"
+
+    - name: Create /etc/etcd
+      file:
+        state: directory
+        path: /etc/etcd
+      when: inventory_hostname in groups['etcd']
+
+    - name: Copy etcd certs
+      copy:
+        src: "{{ item }}"
+        dest: /etc/etcd
+      when: inventory_hostname in groups['etcd']
+      with_items:
+        - ./crypto/kubernetes_privkey.pem
+        - ./crypto/kubernetes.pem
+        - "{{ ca_path }}"
+
+    - name: Create /etc/etcd
+      file:
+        state: directory
+        path: /etc/etcd
+      when: inventory_hostname in groups['controller']
+
+    - name: Only run "update_cache=yes" if the last one is more than 3600 seconds ago
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install etcd software
+      apt:
+        name: etcd
+      when: inventory_hostname in groups['etcd']
