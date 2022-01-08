@@ -14,13 +14,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Define VMs with static private IP addresses.
   boxes = [
-    { :name => "etcd-1", :ip => "10.240.0.2" },
-    { :name => "etcd-2", :ip => "10.240.0.3" },
-    { :name => "etcd-3", :ip => "10.240.0.4" },
-    { :name => "controller-1", :ip => "10.240.0.11" },
-    { :name => "controller-2", :ip => "10.240.0.12" },
-    { :name => "worker-1", :ip => "10.240.0.14" },
-    { :name => "worker-2", :ip => "10.240.0.15"}
+    { :name => "etcd-1", :ip => "10.240.0.11" },
+    { :name => "etcd-2", :ip => "10.240.0.12" },
+    { :name => "etcd-3", :ip => "10.240.0.13" },
+    { :name => "controller-1", :ip => "10.240.0.21" },
+    { :name => "controller-2", :ip => "10.240.0.22" },
+    { :name => "worker-1", :ip => "10.240.0.31" },
+    { :name => "worker-2", :ip => "10.240.0.32"}
   ]
 
   # Provision each of the VMs.

@@ -1,54 +1,82 @@
 ---
-priv_key_path: ./crypto/k8_ca_privkey.pem
-ca_path: ./crypto/ca-certificate.pem
+priv_key_path: ./crypto/ca-key.pem
+ca_path: ./crypto/ca.pem
+
 
 certs:
   - key_path: ./crypto/worker-1_privkey.pem
     cert_path: ./crypto/worker-1.pem
     cn: system:node:worker-1
+    key_usage:
+      - serverAuth
+      - clientAuth
     sans:
     - DNS:worker-1
-    - DNS:10.240.0.14
+    - DNS:10.240.0.31
   - key_path: ./crypto/worker-2_privkey.pem
     cert_path: ./crypto/worker-2.pem
     cn: system:node:worker-2
+    key_usage:
+      - serverAuth
+      - clientAuth
     sans:
     - DNS:worker-2
-    - DNS:10.240.0.15
-  - key_path: ./crypto/worker-3_privkey.pem
-    cert_path: ./crypto/worker-3.pem
-    cn: system:node:worker-3
-    sans:
-    - DNS:worker-3
-    - DNS:10.240.0.16
+    - DNS:10.240.0.32
+  # - key_path: ./crypto/worker-3_privkey.pem
+  #   cert_path: ./crypto/worker-3.pem
+  #   cn: system:node:worker-3
+  #   sans:
+  #   - DNS:worker-3
+  #   - DNS:10.240.0.16
   - key_path: ./crypto/admin_privkey.pem
     cert_path: ./crypto/admin.pem
     cn: admin
+    key_usage:
+      - serverAuth
+      - clientAuth
     sans: []
   - key_path: ./crypto/kube-proxy_privkey.pem
     cert_path: ./crypto/kube-proxy.pem
     cn: system:kube-proxy
+    key_usage:
+      - serverAuth
+      - clientAuth
     sans: []
   - key_path: ./crypto/kube-scheduler_privkey.pem
     cert_path: ./crypto/kube-scheduler.pem
     cn: system:kube-scheduler
+    key_usage:
+      - serverAuth
+      - clientAuth
     sans: []
-  - key_path: ./crypto/kubernetes_privkey.pem
+  - key_path: ./crypto/kubernetes-key.pem
     cert_path: ./crypto/kubernetes.pem
     cn: kubernetes
+    key_usage:
+      - serverAuth
+      - clientAuth
     sans:
     - DNS:kubernetes
     - DNS:kubernetes.default
     - DNS:kubernetes.default.svc
     - DNS:kubernetes.default.svc.cluster
     - DNS:kubernetes.svc.cluster.local
-    - DNS:10.32.0.1
-    - DNS:10.240.0.10
-    - DNS:10.240.0.11
-    - DNS:10.240.0.12
-    - DNS:127.0.0.1
+    - IP:10.32.0.1
+    - IP:10.240.0.21
+    - IP:10.240.0.22
+    - IP:10.240.0.11
+    - IP:10.240.0.12
+    - IP:10.240.0.13
+    - DNS:localhost
+    - IP:127.0.0.1
+    - DNS:etcd-1
+    - DNS:etcd-2
+    - DNS:etcd-3
 
   - key_path: ./crypto/service-accounts_privkey.pem
     cert_path: ./crypto/service-accounts.pem
     cn: service-accounts
+    key_usage:
+      - serverAuth
+      - clientAuth
     sans: []

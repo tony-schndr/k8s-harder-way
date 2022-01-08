@@ -1,0 +1,76 @@
+- name: Create /etc/etcd
+  file:
+    state: directory
+    path: /etc/etcd
+    mode: 0755
+  when: inventory_hostname in groups['etcd']
+
+- name: Copy etcd certs
+  copy:
+    src: "{{ item }}"
+    dest: /etc/etcd
+    mode: 0400
+  when: inventory_hostname in groups['etcd']
+  with_items:
+    - ./crypto/kubernetes-key.pem
+    - ./crypto/kubernetes.pem
+    - "{{ ca_path }}"
+
+- name: Only run "update_cache=yes" if the last one is more than 3600 seconds ago
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: get etcd from source
+  get_url:
+    url: https://github.com/etcd-io/etcd/releases/download/v3.5.1/etcd-v3.5.1-linux-amd64.tar.gz
+    dest: /var/tmp
+  when: inventory_hostname in groups['etcd']
+
+- name: unpack etcd
+  unarchive:
+    src: /var/tmp/etcd-v3.5.1-linux-amd64.tar.gz
+    dest: /var/tmp
+    remote_src: yes
+  when: inventory_hostname in groups['etcd']
+
+- name: copy etcd
+  copy:
+    src: "{{item}}"
+    dest: /usr/bin
+    mode: 0755
+    remote_src: yes
+  when: inventory_hostname in groups['etcd']
+  with_items:
+  - /var/tmp/etcd-v3.5.1-linux-amd64/etcd
+  - /var/tmp/etcd-v3.5.1-linux-amd64/etcdctl
+
+- name: add hosts to /etc/hosts
+  lineinfile:
+    line: "{{ item }}"
+    path: /etc/hosts
+  with_items:
+    - 10.240.0.11 etcd-1
+    - 10.240.0.12 etcd-2
+    - 10.240.0.13 etcd-3
+  when: inventory_hostname in groups['etcd']
+
+- name: create /var/lib/etcd
+  file:
+    state: directory
+    path: /var/lib/etcd
+    mode: 0700
+  when: inventory_hostname in groups['etcd']
+
+- name: create etcd.service from template
+  template:
+    src: templates/etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+  when: inventory_hostname in groups['etcd']
+
+- name: start service etcd
+  ansible.builtin.service:
+    name: etcd
+    state: restarted
+    enabled: yes
+  when: inventory_hostname in groups['etcd']

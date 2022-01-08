@@ -32,7 +32,7 @@
 
     - name: Create self-signed CA certificate from CSR
       community.crypto.x509_certificate:
-        path: ./crypto/ca-certificate.pem
+        path: "{{ca_path}}"
         csr_content: "{{ ca_csr.csr }}"
         privatekey_path: "{{ priv_key_path }}"
         provider: selfsigned
@@ -48,6 +48,7 @@
         privatekey_path:  "{{ item.key_path }}"
         common_name: "{{ item.cn }}"
         subject_alt_name: "{{ item.sans }}"
+        extended_key_usage: "{{ item.key_usage }}"
       with_items: "{{certs}}"
       register: csr
 
