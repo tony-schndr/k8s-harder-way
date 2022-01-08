@@ -1,0 +1,101 @@
+---
+- hosts: localhost
+  gather_facts: yes
+
+  vars_files:
+    - vars/cert_vars.yml
+
+  tasks:
+    - name: Ensure directory exists for crypto
+      file:
+        state: directory
+        path: ./crypto/
+
+    - name: Generate an OpenSSL private key with the default values (4096 bits, RSA)
+      community.crypto.openssl_privatekey:
+        path: "{{ priv_key_path }}"
+      run_once: yes
+
+    - name: Create certificate signing request (CSR) for CA certificate
+      community.crypto.openssl_csr_pipe:
+        privatekey_path: "{{ priv_key_path }}"
+        common_name: K8 Hardway CA
+        use_common_name_for_san: false  # since we do not specify SANs, don't use CN as a SAN
+        basic_constraints:
+          - 'CA:TRUE'
+        basic_constraints_critical: yes
+        key_usage:
+          - keyCertSign
+        key_usage_critical: true
+      register: ca_csr
+      run_once: yes
+
+    - name: Create self-signed CA certificate from CSR
+      community.crypto.x509_certificate:
+        path: ./crypto/ca-certificate.pem
+        csr_content: "{{ ca_csr.csr }}"
+        privatekey_path: "{{ priv_key_path }}"
+        provider: selfsigned
+      register: cert_auth
+
+    - name: Create private key for worker nodes certificates
+      community.crypto.openssl_privatekey:
+        path: "{{ item.key_path }}"
+      with_items: "{{workers_certs}}"
+
+    - name: Create certificate signing request (CSR) for worker node certificate
+      community.crypto.openssl_csr_pipe:
+        privatekey_path:  "{{ item.key_path }}"
+        common_name: "{{ item.cn }}"
+      with_items: "{{workers_certs}}"
+      register: csr
+
+    # - name: debug
+    #   debug:
+    #     msg: "{{ item.item.cert_path }}"
+    #   with_items: "{{ csr.results }}"
+
+    - name: Sign worker node certificate with our CA
+      community.crypto.x509_certificate:
+        csr_content: "{{ item.csr }}"
+        provider: ownca
+        path: "{{ item.item.cert_path }}"
+        ownca_path: "{{ ca_path }}"
+        ownca_privatekey_path: "{{ priv_key_path }}"
+        ownca_not_after: +365d  # valid for one year
+        ownca_not_before: "-1d"  # valid since yesterday
+      with_items: "{{ csr.results }}"
+      register: certificate
+
+
+
+    # - name: write worker node cert to file
+    #   copy:
+    #     dest: "./crypto/worker.pem"
+    #     content: "{{ item.certificate }}"
+    #   with_items: "{{ certificate.results }}"
+
+    # - name: Create private key for worker nodes certificates
+    #   community.crypto.openssl_privatekey:
+    #     path: "{{ admin_key_path }}"
+
+    # - name: Create certificate signing request (CSR) for worker node certificate
+    #   community.crypto.openssl_csr_pipe:
+    #     privatekey_path:  "{{ admin_key_path }}"
+    #     common_name: "{{ admin_cn }}"
+    #   register: csr
+
+    # - name: Sign worker node certificate with our CA
+    #   community.crypto.x509_certificate_pipe:
+    #     csr_content: "{{ csr.csr }}"
+    #     provider: ownca
+    #     ownca_path: "{{ ca_path }}"
+    #     ownca_privatekey_path: "{{ priv_key_path }}"
+    #     ownca_not_after: +365d  # valid for one year
+    #     ownca_not_before: "-1d"  # valid since yesterday
+    #   register: certificate
+
+    # - name: write admin cert to file
+    #   copy:
+    #     dest: "./crypto/admin.pem"
+    #     content: "{{ certificate.certificate }}"

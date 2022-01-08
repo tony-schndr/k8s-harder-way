@@ -1,0 +1,16 @@
+---
+- hosts: kubernetes
+  gather_facts: yes
+  become: yes
+
+  vars_files:
+    - vars/cert_vars.yml
+
+  tasks:
+    - name: Copy worker cert/key
+      copy:
+        src: "{{ item }}"
+        dest: /etc/ssl
+      with_items:
+        - "{{ worker_key_path }}"
+        - "{{ worker_cert_path }}"
