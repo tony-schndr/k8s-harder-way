@@ -4,13 +4,31 @@
   become: yes
 
   vars_files:
-    - vars/cert_vars.yml
+    - vars/certs.yml
 
   tasks:
     - name: Copy worker cert/key
       copy:
-        src: "{{ item }}"
+        src: "crypto/{{ inventory_hostname }}.pem"
         dest: /etc/ssl
-      with_items:
-        - "{{ worker_key_path }}"
-        - "{{ worker_cert_path }}"
+      when: inventory_hostname in groups['kubernetes_node']
+
+    - name: Copy worker cert/key
+      copy:
+        src: "crypto/{{ inventory_hostname }}_privkey.pem"
+        dest: /etc/ssl
+      when: inventory_hostname in groups['kubernetes_node']
+
+    - name: Copy controller keys
+      copy:
+        src: "{{ item.key_path }}"
+        dest: /etc/ssl
+      when: inventory_hostname in groups['kubernetes_master'] and 'worker' not in item.key_path
+      with_items: "{{ certs }}"
+
+    - name: Copy controller certs
+      copy:
+        src: "{{ item.cert_path }}"
+        dest: /etc/ssl
+      when: inventory_hostname in groups['kubernetes_master'] and 'worker' not in item.cert_path
+      with_items: "{{ certs }}"

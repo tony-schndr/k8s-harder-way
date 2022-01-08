@@ -14,6 +14,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Define three VMs with static private IP addresses.
   boxes = [
+    { :name => "controller-1", :ip => "10.240.0.11" },
+    { :name => "controller-2", :ip => "10.240.0.12" },
+    { :name => "controller-3", :ip => "10.240.0.13" },
     { :name => "worker-1", :ip => "192.168.33.71" },
     { :name => "worker-2", :ip => "192.168.33.72" },
     { :name => "worker-3", :ip => "192.168.33.73" }
@@ -33,8 +36,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           ansible.limit = "all"
           ansible.become = true
           ansible.groups = {
-            "kubernetes" => ["worker-1", "worker-2", "worker-3"],
-            # "kubernetes_master" => [],
+            "kubernetes" => ["worker-1", "worker-2", "worker-3",
+                             "controller-1", "controller-2", "controller-3"],
+            "kubernetes_master" => ["controller-1", "controller-2", "controller-3"],
             # "kubernetes_master:vars" => {
             #   kubernetes_role: "master",
             #   swapfile_path: "/dev/mapper/ubuntu--vg-ubuntu--lv",

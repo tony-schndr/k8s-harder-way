@@ -3,7 +3,7 @@
   gather_facts: yes
 
   vars_files:
-    - vars/cert_vars.yml
+    - vars/certs.yml
 
   tasks:
     - name: Ensure directory exists for crypto
@@ -38,22 +38,18 @@
         provider: selfsigned
       register: cert_auth
 
-    - name: Create private key for worker nodes certificates
+    - name: Create private keys nodes certificates
       community.crypto.openssl_privatekey:
         path: "{{ item.key_path }}"
-      with_items: "{{workers_certs}}"
+      with_items: "{{certs}}"
 
-    - name: Create certificate signing request (CSR) for worker node certificate
+    - name: Create certificate signing request (CSR) for certificates
       community.crypto.openssl_csr_pipe:
         privatekey_path:  "{{ item.key_path }}"
         common_name: "{{ item.cn }}"
-      with_items: "{{workers_certs}}"
+        subject_alt_name: "{{ item.sans }}"
+      with_items: "{{certs}}"
       register: csr
-
-    # - name: debug
-    #   debug:
-    #     msg: "{{ item.item.cert_path }}"
-    #   with_items: "{{ csr.results }}"
 
     - name: Sign worker node certificate with our CA
       community.crypto.x509_certificate:
@@ -66,36 +62,3 @@
         ownca_not_before: "-1d"  # valid since yesterday
       with_items: "{{ csr.results }}"
       register: certificate
-
-
-
-    # - name: write worker node cert to file
-    #   copy:
-    #     dest: "./crypto/worker.pem"
-    #     content: "{{ item.certificate }}"
-    #   with_items: "{{ certificate.results }}"
-
-    # - name: Create private key for worker nodes certificates
-    #   community.crypto.openssl_privatekey:
-    #     path: "{{ admin_key_path }}"
-
-    # - name: Create certificate signing request (CSR) for worker node certificate
-    #   community.crypto.openssl_csr_pipe:
-    #     privatekey_path:  "{{ admin_key_path }}"
-    #     common_name: "{{ admin_cn }}"
-    #   register: csr
-
-    # - name: Sign worker node certificate with our CA
-    #   community.crypto.x509_certificate_pipe:
-    #     csr_content: "{{ csr.csr }}"
-    #     provider: ownca
-    #     ownca_path: "{{ ca_path }}"
-    #     ownca_privatekey_path: "{{ priv_key_path }}"
-    #     ownca_not_after: +365d  # valid for one year
-    #     ownca_not_before: "-1d"  # valid since yesterday
-    #   register: certificate
-
-    # - name: write admin cert to file
-    #   copy:
-    #     dest: "./crypto/admin.pem"
-    #     content: "{{ certificate.certificate }}"

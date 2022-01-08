@@ -1,0 +1,49 @@
+
+
+priv_key_path: ./crypto/k8_ca_privkey.pem
+ca_path: ./crypto/ca-certificate.pem
+
+
+certs:
+  - key_path: ./crypto/worker-1_privkey.pem
+    cert_path: ./crypto/worker-1.pem
+    cn: system:node:worker-1
+    sans: []
+  - key_path: ./crypto/worker-2_privkey.pem
+    cert_path: ./crypto/worker-2.pem
+    cn: system:node:worker-2
+    sans: []
+  - key_path: ./crypto/worker-3_privkey.pem
+    cert_path: ./crypto/worker-3.pem
+    cn: system:node:worker-3
+    sans: []
+  - key_path: ./crypto/admin_privkey.pem
+    cert_path: ./crypto/admin.pem
+    cn: admin
+    sans: []
+  - key_path: ./crypto/kube-proxy_privkey.pem
+    cert_path: ./crypto/kube-proxy.pem
+    cn: system:kube-proxy
+    sans: []
+  - key_path: ./crypto/kube-scheduler_privkey.pem
+    cert_path: ./crypto/kube-scheduler.pem
+    cn: system:kube-scheduler
+    sans: []
+  - key_path: ./crypto/kubernetes_privkey.pem
+    cert_path: ./crypto/kubernetes.pem
+    cn: kubernetes
+    sans:
+    - DNS:kubernetes
+    - DNS:kubernetes.default
+    - DNS:kubernetes.default.svc
+    - DNS:kubernetes.default.svc.cluster
+    - DNS:kubernetes.svc.cluster.local
+    - DNS:10.32.0.1
+    - DNS:10.240.0.10
+    - DNS:10.240.0.11
+    - DNS:10.240.0.12
+
+  - key_path: ./crypto/service-accounts_privkey.pem
+    cert_path: ./crypto/service-accounts.pem
+    cn: service-accounts
+    sans: []
