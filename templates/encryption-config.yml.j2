@@ -1,0 +1,11 @@
+kind: EncryptionConfig
+apiVersion: v1
+resources:
+  - resources:
+      - secrets
+    providers:
+      - aescbc:
+          keys:
+            - name: key1
+              secret: {{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=20') }}
+      - identity: {}

@@ -16,11 +16,6 @@
     - ./crypto/kubernetes.pem
     - "{{ ca_path }}"
 
-- name: Only run "update_cache=yes" if the last one is more than 3600 seconds ago
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
-
 - name: get etcd from source
   get_url:
     url: https://github.com/etcd-io/etcd/releases/download/v3.5.1/etcd-v3.5.1-linux-amd64.tar.gz
@@ -61,6 +56,6 @@
 - name: start service etcd
   ansible.builtin.service:
     name: etcd
-    state: restarted
+    state: started
     enabled: yes
   when: inventory_hostname in groups['etcd']

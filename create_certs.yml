@@ -69,3 +69,8 @@
         ownca_not_before: "-1d"  # valid since yesterday
       with_items: "{{ csr.results }}"
       register: certificate
+
+    - name: Create encryption-config.yml
+      template:
+        src: templates/encryption-config.yml.j2
+        dest: crypto/encryption-config.yml

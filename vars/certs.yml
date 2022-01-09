@@ -28,7 +28,7 @@ certs:
   #   sans:
   #   - DNS:worker-3
   #   - DNS:10.240.0.16
-  - key_path: ./crypto/admin_privkey.pem
+  - key_path: ./crypto/admin-key.pem
     cert_path: ./crypto/admin.pem
     cn: admin
     key_usage:
