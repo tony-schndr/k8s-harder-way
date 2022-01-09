@@ -26,6 +26,9 @@
         basic_constraints_critical: yes
         key_usage:
           - keyCertSign
+        extended_key_usage:
+          - serverAuth
+          - clientAuth
         key_usage_critical: true
       register: ca_csr
       run_once: yes
@@ -48,6 +51,9 @@
         privatekey_path:  "{{ item.key_path }}"
         common_name: "{{ item.cn }}"
         subject_alt_name: "{{ item.sans }}"
+        key_usage:
+          - keyEncipherment
+         # - dataEncipherment
         extended_key_usage: "{{ item.key_usage }}"
       with_items: "{{certs}}"
       register: csr

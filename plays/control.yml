@@ -1,0 +1,62 @@
+- name: Create required kubernetes directory
+  file:
+    state: directory
+    path: "{{ item }}"
+    mode: 755
+  when: inventory_hostname in groups['controller']
+  with_items:
+    - /etc/kubernetes/config
+    - /var/lib/kubernetes/
+
+- name: Copy required certs/keys/token to /var/lib/kubernetes
+  copy:
+    src: "{{ item }}"
+    dest: /var/lib/kubernetes/
+    mode: 0400
+  when:  inventory_hostname in groups['controller']
+  with_items:
+    - ./crypto/kubernetes-key.pem
+    - ./crypto/kubernetes.pem
+    - "{{ ca_path }}"
+    - ./crypto/service-account-key.pem
+    - ./crypto/service-account.pem
+    - ./files/token.csv
+    - ./files/authorization-policy.jsonl
+
+- name:  Setup Kubernetes binaries
+  get_url:
+    url: "{{ item }}"
+    dest: /usr/bin/
+    mode: 0755
+  when: inventory_hostname in groups['controller']
+  with_items:
+    - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-apiserver"
+    - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-controller-manager"
+    - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-scheduler"
+    - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl"
+
+- name: create kube-apiserver.service from template
+  template:
+    src: templates/kube-apiserver.service.j2
+    dest: /etc/systemd/system/kube-apiserver.service
+  when: inventory_hostname in groups['controller']
+
+- name: start service kube-apiserver
+  ansible.builtin.service:
+    name: kube-apiserver
+    state: restarted
+    enabled: yes
+  when: inventory_hostname in groups['controller']
+
+- name: create kube-apiserver.service from template
+  template:
+    src: templates/kube-controller-manager.service.j2
+    dest: /etc/systemd/system/kube-controller-manager.service
+  when: inventory_hostname in groups['controller']
+
+- name: start service kube-controller-manager
+  ansible.builtin.service:
+    name: kube-controller-manager
+    state: restarted
+    enabled: yes
+  when: inventory_hostname in groups['controller']

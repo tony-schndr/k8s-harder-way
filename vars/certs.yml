@@ -66,15 +66,22 @@ certs:
     - IP:10.240.0.22
     - IP:10.240.0.11
     - IP:10.240.0.12
-    - IP:10.240.0.13
     - DNS:localhost
     - IP:127.0.0.1
     - DNS:etcd-1
     - DNS:etcd-2
-    - DNS:etcd-3
+    - DNS:etcd-1.example.com
+    - DNS:etcd-2.example.com
+    - DNS:controller
+    - IP:10.240.0.20
+    - DNS:controller-1
+    - DNS:controller-2
+    - DNS:controller-1.example.com
+    - DNS:controller-2.example.com
 
-  - key_path: ./crypto/service-accounts_privkey.pem
-    cert_path: ./crypto/service-accounts.pem
+
+  - key_path: ./crypto/service-account-key.pem
+    cert_path: ./crypto/service-account.pem
     cn: service-accounts
     key_usage:
       - serverAuth

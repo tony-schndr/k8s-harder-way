@@ -8,4 +8,21 @@
 
   tasks:
     #- import_tasks: plays/crypto.yml
+    - name: add hosts to /etc/hosts
+      lineinfile:
+        line: "{{ item }}"
+        path: /etc/hosts
+      with_items:
+        - 10.240.0.11 etcd-1
+        - 10.240.0.12 etcd-2
+        - 10.240.0.13 etcd-3
+        - 10.240.0.11     etcd1.example.com       etcd1
+        - 10.240.0.12     etcd2.example.com       etcd2
+        - 10.240.0.21     controller-1.example.com controller-1
+        - 10.240.0.22     controller-2.example.com controller-2
+        - 10.240.0.31     worker1.example.com     worker1
+        - 10.240.0.32     worker2.example.com     worker2
+        - 10.240.0.200	lb.example.com		lb
+
     - import_tasks: plays/etcd.yml
+    - import_tasks: plays/control.yml

@@ -45,16 +45,6 @@
   - /var/tmp/etcd-v3.5.1-linux-amd64/etcd
   - /var/tmp/etcd-v3.5.1-linux-amd64/etcdctl
 
-- name: add hosts to /etc/hosts
-  lineinfile:
-    line: "{{ item }}"
-    path: /etc/hosts
-  with_items:
-    - 10.240.0.11 etcd-1
-    - 10.240.0.12 etcd-2
-    - 10.240.0.13 etcd-3
-  when: inventory_hostname in groups['etcd']
-
 - name: create /var/lib/etcd
   file:
     state: directory
