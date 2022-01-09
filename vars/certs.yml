@@ -35,23 +35,28 @@ certs:
       - serverAuth
       - clientAuth
     sans: []
-  - key_path: ./crypto/kube-proxy_privkey.pem
+  - key_path: ./crypto/kube-proxy-key.pem
     cert_path: ./crypto/kube-proxy.pem
     cn: system:kube-proxy
     key_usage:
       - serverAuth
       - clientAuth
     sans: []
-  - key_path: ./crypto/kube-scheduler_privkey.pem
+  - key_path: ./crypto/kube-scheduler-key.pem
     cert_path: ./crypto/kube-scheduler.pem
     cn: system:kube-scheduler
     key_usage:
       - serverAuth
       - clientAuth
     sans: []
+  - key_path: ./crypto/kube-controller-manager-key.pem
+    cert_path: ./crypto/kube-controller-manager.pem
+    cn: system:kube-controller-manager
+    key_usage: []
+    sans: []
   - key_path: ./crypto/kubernetes-key.pem
     cert_path: ./crypto/kubernetes.pem
-    cn: kubernetes
+    cn: "*.example.com"
     key_usage:
       - serverAuth
       - clientAuth
@@ -78,7 +83,6 @@ certs:
     - DNS:controller-2
     - DNS:controller-1.example.com
     - DNS:controller-2.example.com
-
 
   - key_path: ./crypto/service-account-key.pem
     cert_path: ./crypto/service-account.pem

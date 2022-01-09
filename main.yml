@@ -21,5 +21,5 @@
         - 10.240.0.32     worker2.example.com     worker2
         - 10.240.0.200	lb.example.com		lb
 
-    # - import_tasks: plays/etcd.yml
+    - import_tasks: plays/etcd.yml
     - import_tasks: plays/control.yml
