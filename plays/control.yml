@@ -24,7 +24,7 @@
     - ./crypto/admin.pem
     - ./files/token.csv
     - ./files/authorization-policy.jsonl
-    - ./files/encryption-config.yml
+    - ./crypto/encryption-config.yaml
 
 # - name:  Setup Kubernetes binaries
 #   get_url:

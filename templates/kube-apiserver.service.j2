@@ -19,6 +19,7 @@ ExecStart=/usr/bin/kube-apiserver \
   --etcd-certfile=/var/lib/kubernetes/kubernetes.pem \
   --etcd-keyfile=/var/lib/kubernetes/kubernetes-key.pem \
   --etcd-servers=https://10.240.0.11:2379,https://10.240.0.12:2379 \
+  --encryption-provider-config=/var/lib/kubernetes/encryption-config.yaml \
   --event-ttl=1h \
   --kubelet-certificate-authority=/var/lib/kubernetes/ca.pem \
   --kubelet-client-certificate=/var/lib/kubernetes/kubernetes.pem \

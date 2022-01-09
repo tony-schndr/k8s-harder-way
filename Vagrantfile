@@ -16,12 +16,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   boxes = [
     { :name => "etcd-1", :ip => "10.240.0.11" },
     { :name => "etcd-2", :ip => "10.240.0.12" },
-    { :name => "controller", :ip => "10.240.0.20" },
+    # { :name => "controller", :ip => "10.240.0.20" },
     { :name => "controller-1", :ip => "10.240.0.21" },
     { :name => "controller-2", :ip => "10.240.0.22" },
     { :name => "worker-1", :ip => "10.240.0.31" },
     { :name => "worker-2", :ip => "10.240.0.32"},
-    { :name => "lb", :ip => "10.240.0.20"},
   ]
 
   # Provision each of the VMs.
