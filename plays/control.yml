@@ -33,17 +33,17 @@
     - ./files/authorization-policy.jsonl
     - ./crypto/encryption-config.yaml
 
-# - name:  Setup Kubernetes binaries
-#   get_url:
-#     url: "{{ item }}"
-#     dest: /usr/bin/
-#     mode: 0755
-#   when: inventory_hostname in groups['controller']
-#   with_items:
-#     - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-apiserver"
-#     - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-controller-manager"
-#     - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-scheduler"
-#     - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl"
+- name:  Setup Kubernetes binaries
+  get_url:
+    url: "{{ item }}"
+    dest: /usr/bin/
+    mode: 0755
+  when: inventory_hostname in groups['controller']
+  with_items:
+    - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-apiserver"
+    - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-controller-manager"
+    - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-scheduler"
+    - "https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl"
 
 - name: create kube-apiserver.service from template
   template:
@@ -70,13 +70,12 @@
     dest: /etc/kubernetes/config/kube-scheduler.yaml
   when: inventory_hostname in groups['controller']
 
-
 - name: Generate kube config on controllers
   ansible.builtin.command:
     cmd: "{{ item }}"
   with_items:
     # kube-proxy config
-    - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://localhost:6443 --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
+    - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://127.0.0.1:6443 --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
     - kubectl config set-credentials system:kube-proxy --client-certificate=/var/lib/kubernetes/kube-proxy.pem --client-key=/var/lib/kubernetes/kube-proxy-key.pem --embed-certs=true --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
     - kubectl config set-context default --cluster=kubernetes-the-hard-way --user=system:kube-proxy --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
     - kubectl config use-context default --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig

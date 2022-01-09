@@ -1,3 +1,4 @@
 *.pem
 .vagrant/
 crypto/
+venv/

@@ -1,6 +1,17 @@
 # k8-harder-way
 
-Building a k8 bare metal cluster from scratch with Vagrant and Ansible by following https://github.com/kelseyhightower/kubernetes-the-hard-way
+Building a k8 bare metal cluster from scratch with Vagrant and Ansible by following https://github.com/kelseyhightower/kubernetes-the-hard-way and https://github.com/Praqma/LearnKubernetes/blob/master/kamran/Kubernetes-The-Hard-Way-on-BareMetal.md
+
+## Setup
+
+Ensure vagrant, virtual box, and ansible are installed on the host.  This project was built on `Ubuntu 20.04.3 LTS`
+
+Install ansible in a virtual environment from devel branch.
+```
+python3 -m venv venv
+. ./venv/bin/activate
+pip install https://github.com/ansible/ansible/archive/devel.tar.gz --disable-pip-version-check
+```
 
 ---
 ## Certificates
@@ -33,45 +44,3 @@ Extended Key Usage `serverAuth` and `clientAuth`
 
 Distribute the cert/key pair and CA chain to all etcd nodes.  Create `etcd.service` on all nodes, this is templated in `templates/etcd.service.j2`.
 
-
-## control plane bootstrap
-
-## create kube-controller-manager.kubeconfig
-```
-
-
-kubectl config set-credentials system:kube-controller-manager \
-    --client-certificate=/var/lib/kubernetes/kubernetes.pem \
-    --client-key=/var/lib/kubernetes/kubernetes-key.pem \
-    --embed-certs=true \
-    --kubeconfig=kube-controller-manager.kubeconfig
-
-kubectl config set-context default \
-    --cluster=kubernetes-the-hard-way \
-    --user=system:kube-controller-manager \
-    --kubeconfig=kube-controller-manager.kubeconfig
-
-kubectl config use-context default --kubeconfig=kube-controller-manager.kubeconfig
-```
-
-## Create admin.kubeconfig
-```
-kubectl config set-cluster kubernetes-the-hard-way \
-    --certificate-authority=/var/lib/kubernetes/ca.pem \
-    --embed-certs=true \
-    --server=https://127.0.0.1:6443 \
-    --kubeconfig=admin.kubeconfig
-
-kubectl config set-credentials admin \
-    --client-certificate=/var/lib/kubernetes/admin.pem \
-    --client-key=/var/lib/kubernetes/admin-key.pem \
-    --embed-certs=true \
-    --kubeconfig=admin.kubeconfig
-
-kubectl config set-context default \
-    --cluster=kubernetes-the-hard-way \
-    --user=admin \
-    --kubeconfig=admin.kubeconfig
-
-kubectl config use-context default --kubeconfig=admin.kubeconfig
-```
