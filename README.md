@@ -19,12 +19,12 @@ https://kubernetes.io/docs/concepts/security/controlling-access/
 
 https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/04-certificate-authority.md
 
-Run play to create certs from the variables defined in `var/certs.yml`
+Run the play `create_crypto.yml` prior to `vagrant up` to create necessary crypto objects.  This play will quickly generate a Certificate Authority and every Certificate needed to boot strap the cluster.  Certificate variables such as extended key usage, key usage, CN, etc... are all stored in `var/certs.yml` and can be tweaked if desired.  When regenerate crypto delete the `crypto/` directory and rerun `create_crypto.yml`, rinse and repeat if needed.  To reapply crypto settings to the cluster run `vagrant provision`.
+
 ```
-ansible-playbook create_certs.yml
+ansible-playbook create_crypto.yml
 ```
 
-When vagrant machines are provisioned these certs are uploaded to the appropriate VMs.
 
 ---
 ## Kubernetes configuration files for auth
@@ -44,3 +44,13 @@ Extended Key Usage `serverAuth` and `clientAuth`
 
 Distribute the cert/key pair and CA chain to all etcd nodes.  Create `etcd.service` on all nodes, this is templated in `templates/etcd.service.j2`.
 
+
+## Controller bootstrap
+
+Validate the control plane is running.
+```
+root@controller-2:~# kubectl cluster-info --kubeconfig /etc/kubernetes/config/admin.kubeconfig
+Kubernetes control plane is running at https://127.0.0.1:6443
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+```

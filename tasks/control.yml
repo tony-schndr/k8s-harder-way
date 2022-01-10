@@ -54,7 +54,7 @@
 - name: start service kube-apiserver
   ansible.builtin.service:
     name: kube-apiserver
-    state: restarted
+    state: started
     enabled: yes
   when: inventory_hostname in groups['controller']
 
@@ -99,7 +99,7 @@
 - name: start service kube-controller-manager
   ansible.builtin.service:
     name: kube-controller-manager
-    state: restarted
+    state: started
     enabled: yes
   when: inventory_hostname in groups['controller']
 
@@ -112,6 +112,6 @@
 - name: start service kube-controller-manager
   ansible.builtin.service:
     name:  kube-scheduler
-    state: restarted
+    state: started
     enabled: yes
   when: inventory_hostname in groups['controller']

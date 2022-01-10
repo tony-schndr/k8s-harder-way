@@ -1,0 +1,208 @@
+
+
+- name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
+  shell: |
+    swapoff -a
+  when: inventory_hostname in groups['worker']
+
+- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+  when: inventory_hostname in groups['worker']
+
+- name: Create required kubernetes directory
+  file:
+    state: directory
+    path: "{{ item }}"
+    mode: 755
+  when: inventory_hostname in groups['worker']
+  with_items:
+    - /etc/kubernetes/config
+    - /var/lib/kubernetes/
+    - /etc/cni/net.d
+    - /opt/cni/bin
+    - /var/lib/kubelet
+    - /var/lib/kube-proxy
+    - /var/run/kubernetes
+    - /var/tmp/containerd
+    - /etc/containerd
+
+- name: Copy worker cert/key
+  copy:
+    src: "crypto/{{ inventory_hostname }}.pem"
+    dest: /var/lib/kubernetes
+  when: inventory_hostname in groups['worker']
+
+- name: Copy worker cert/key
+  copy:
+    src: "crypto/{{ inventory_hostname }}-key.pem"
+    dest: /var/lib/kubernetes
+  when: inventory_hostname in groups['worker']
+
+- name: Copy required certs/keys/token to /var/lib/kubernetes
+  copy:
+    src: "{{ item }}"
+    dest: /var/lib/kubernetes/
+    mode: 0400
+  when:  inventory_hostname in groups['worker']
+  with_items:
+    - ./crypto/kubernetes-key.pem
+    - ./crypto/kubernetes.pem
+    - ./crypto/kube-proxy-key.pem
+    - ./crypto/kube-proxy.pem
+    - "{{ ca_path }}"
+
+- name:  Download kubectl, kube-proxy, and kubelet
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.path }}"
+    mode: 0755
+  when: inventory_hostname in groups['worker']
+  with_items:
+    - url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl
+      path: /usr/bin
+    - url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-proxy
+      path: /usr/bin
+    - url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubelet
+      path: /usr/bin
+
+- name:  Download worker binaries
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.path }}"
+    mode: 0755
+  when: inventory_hostname in groups['worker']
+  with_items:
+    - url: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.21.0/crictl-v1.21.0-linux-amd64.tar.gz
+      path: /var/tmp
+    - url: https://github.com/opencontainers/runc/releases/download/v1.0.0-rc93/runc.amd64
+      path: /usr/bin/runc
+    - url: https://github.com/containernetworking/plugins/releases/download/v0.9.1/cni-plugins-linux-amd64-v0.9.1.tgz
+      path: /var/tmp
+    - url: https://github.com/containerd/containerd/releases/download/v1.4.4/containerd-1.4.4-linux-amd64.tar.gz
+      path: /var/tmp
+
+- name: unpack downloaded binaries
+  unarchive:
+    src: "{{ item.src}}"
+    dest: "{{ item.dest }}"
+    remote_src: yes
+    mode: 755
+  when: inventory_hostname in groups['worker']
+  with_items:
+    - src: /var/tmp/crictl-v1.21.0-linux-amd64.tar.gz
+      dest: /usr/bin
+    - src: /var/tmp/cni-plugins-linux-amd64-v0.9.1.tgz
+      dest:  /opt/cni/bin/
+    - src: /var/tmp/containerd-1.4.4-linux-amd64.tar.gz
+      dest: /var/tmp/containerd
+
+- name: Copy containerd binaries into /bin/
+  copy:
+    src: /var/tmp/containerd/bin/
+    dest: /bin/
+    mode: "0755"
+    remote_src: yes
+  when: inventory_hostname in groups['worker']
+
+- name: Change permissions for containerd bin files
+  file:
+    path: /bin/{{ item }}
+    mode: 0755
+  when: inventory_hostname in groups['worker']
+  with_items:
+    - containerd
+    - containerd-shim
+    - containerd-shim-runc-v1
+    - containerd-shim-runc-v2
+    - ctr
+
+- name: Copy containerd config files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - src: files/containerd.service
+      dest: /etc/systemd/system/
+    - src: files/containerd/config.toml
+      dest: /etc/containerd/config.toml
+  when: inventory_hostname in groups['worker']
+
+- name: start service containerd
+  ansible.builtin.service:
+    name:  containerd
+    state: restarted
+    enabled: yes
+  when: inventory_hostname in groups['worker']
+
+- name: template CNI Networking
+  template:
+    src: templates/10-bridge.conf.j2
+    dest: /etc/cni/net.d/10-bridge.conf
+  when: inventory_hostname in groups['worker']
+
+- name: Copy loopback network config
+  copy:
+    src: files/99-loopback.conf
+    dest: /etc/cni/net.d/99-loopback.conf"
+  when: inventory_hostname in groups['worker']
+
+- name: Copy kubelet.service
+  copy:
+    src:  files/kubelet.service
+    dest: /etc/systemd/system/kubelet.service
+    mode: 0644
+  when:  inventory_hostname in groups['worker']
+
+- name: template /var/lib/kubelet/kubelet-config.yaml
+  template:
+    src: templates/kubelet-config.yaml.j2
+    dest: /var/lib/kubelet/kubelet-config.yaml
+  when: inventory_hostname in groups['worker']
+
+- name: start service kubelet
+  ansible.builtin.service:
+    name:  kubelet
+    state: restarted
+    enabled: yes
+  when: inventory_hostname in groups['worker']
+
+- name: Generate kube config on workers
+  ansible.builtin.command:
+    cmd: "{{ item }}"
+  when: inventory_hostname in groups['worker']
+  with_items:
+    # kubecofnig
+    - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://10.240.0.21:6443 --kubeconfig=/etc/kubernetes/config/kubeconfig
+    - kubectl config set-credentials system:node:{{ inventory_hostname }} --client-certificate=/var/lib/kubernetes/{{ inventory_hostname }}.pem --client-key=/var/lib/kubernetes/{{ inventory_hostname }}-key.pem --embed-certs=true --kubeconfig=/etc/kubernetes/config/kubeconfig
+    - kubectl config set-context default --cluster=kubernetes-the-hard-way --user=system:node:{{ inventory_hostname }} --kubeconfig=/etc/kubernetes/config/kubeconfig
+    - kubectl config use-context default --kubeconfig=/etc/kubernetes/config/kubeconfig
+
+    # kube-proxy
+    - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://10.240.0.21:6443 --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
+    - kubectl config set-credentials system:/var/lib/kubernetes/kube-proxy --client-certificate=/var/lib/kubernetes/kube-proxy.pem --client-key=/var/lib/kubernetes/kube-proxy-key.pem --embed-certs=true --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
+    - kubectl config set-context default --cluster=kubernetes-the-hard-way --user=system:kube-proxy --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
+    - kubectl config use-context default --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
+
+- name: Copy kubelet.proxy
+  copy:
+    src:  files/kube-proxy.service
+    dest: /etc/systemd/system/kube-proxy.service
+    mode: 0755
+  when:  inventory_hostname in groups['worker']
+
+- name: Copy kube-proxy-config.yaml
+  copy:
+    src:  files/kube-proxy-config.yaml
+    dest: /etc/kubernetes/config/kube-proxy-config.yaml
+    mode: 0755
+  when:  inventory_hostname in groups['worker']
+
+- name: start service proxy
+  ansible.builtin.service:
+    name:  kube-proxy
+    state: restarted
+    enabled: yes
+  when: inventory_hostname in groups['worker']
