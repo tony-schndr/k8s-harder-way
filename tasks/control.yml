@@ -30,7 +30,8 @@
     - ./crypto/admin-key.pem
     - ./crypto/admin.pem
     - ./files/token.csv
-    - ./files/authorization-policy.jsonl
+    - ./files/kube-apiserver-to-kubelet-cluster-role.yaml
+    - ./files/kubernetes-user-bind-kubelet-cluster-role.yaml    
     - ./crypto/encryption-config.yaml
 
 - name:  Setup Kubernetes binaries
@@ -115,3 +116,16 @@
     state: started
     enabled: yes
   when: inventory_hostname in groups['controller']
+
+- name: Create API Server to kubelet cluster role
+  ansible.builtin.command:
+    cmd:  kubectl apply --kubeconfig admin.kubeconfig -f /var/lib/kubernetes/kube-apiserver-to-kubelet-cluster-role.yaml
+  run_once: yes
+  when: inventory_hostname in groups['controller']
+
+- name: start service kube-controller-manager
+  ansible.builtin.command:
+    cmd:  kubectl apply --kubeconfig admin.kubeconfig -f /var/lib/kubernetes/kubernetes-user-bind-kubelet-cluster-role.yaml
+  run_once: yes
+  when: inventory_hostname in groups['controller']
+

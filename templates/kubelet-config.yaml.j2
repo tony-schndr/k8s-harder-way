@@ -15,5 +15,5 @@ clusterDNS:
 podCIDR: {{ pod_cidr }}
 resolvConf: "/run/systemd/resolve/resolv.conf"
 runtimeRequestTimeout: "15m"
-tlsCertFile: "/var/lib/kubelet/{{ inventory_hostname }}.pem"
-tlsPrivateKeyFile: "/var/lib/kubelet/{{ inventory_hostname }}-key.pem"
+tlsCertFile: "/var/lib/kubernetes/{{ inventory_hostname }}.pem"
+tlsPrivateKeyFile: "/var/lib/kubernetes/{{ inventory_hostname }}-key.pem"

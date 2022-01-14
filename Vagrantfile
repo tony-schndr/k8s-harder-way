@@ -30,7 +30,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.vm.network :private_network, ip: opts[:ip]
       if opts[:name] == "worker-1" || opts[:name] == "worker-2"
         config.vm.provider :virtualbox do |vb|
-          vb.customize ["modifyvm", :id, "--memory", "2048"]
+          vb.customize ["modifyvm", :id, "--memory", "1024"]
           vb.customize ["modifyvm", :id, "--cpus", "2"]
         end
       end

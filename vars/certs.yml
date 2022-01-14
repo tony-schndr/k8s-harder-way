@@ -2,11 +2,12 @@
 priv_key_path: ./crypto/ca-key.pem
 ca_path: ./crypto/ca.pem
 
-
 certs:
   - key_path: ./crypto/worker-1-key.pem
     cert_path: ./crypto/worker-1.pem
     cn: system:node:worker-1
+    subject:
+      O: system:nodes
     key_usage:
       - serverAuth
       - clientAuth
@@ -16,6 +17,8 @@ certs:
   - key_path: ./crypto/worker-2-key.pem
     cert_path: ./crypto/worker-2.pem
     cn: system:node:worker-2
+    subject:
+      O: system:nodes
     key_usage:
       - serverAuth
       - clientAuth
@@ -25,6 +28,8 @@ certs:
   - key_path: ./crypto/admin-key.pem
     cert_path: ./crypto/admin.pem
     cn: admin
+    subject:
+      O: system:masters
     key_usage:
       - serverAuth
       - clientAuth
@@ -32,6 +37,8 @@ certs:
   - key_path: ./crypto/kube-proxy-key.pem
     cert_path: ./crypto/kube-proxy.pem
     cn: system:kube-proxy
+    subject:
+      O: system:node-proxier
     key_usage:
       - serverAuth
       - clientAuth
@@ -39,6 +46,8 @@ certs:
   - key_path: ./crypto/kube-scheduler-key.pem
     cert_path: ./crypto/kube-scheduler.pem
     cn: system:kube-scheduler
+    subject:
+      O: kube-scheduler
     key_usage:
       - serverAuth
       - clientAuth
@@ -46,11 +55,15 @@ certs:
   - key_path: ./crypto/kube-controller-manager-key.pem
     cert_path: ./crypto/kube-controller-manager.pem
     cn: system:kube-controller-manager
+    subject:
+      O: system:kube-controller-manager
     key_usage: []
     sans: []
   - key_path: ./crypto/kubernetes-key.pem
     cert_path: ./crypto/kubernetes.pem
     cn: "*.example.com"
+    subject:
+      O: kubernetes
     key_usage:
       - serverAuth
       - clientAuth
@@ -61,26 +74,21 @@ certs:
     - DNS:kubernetes.default.svc.cluster
     - DNS:kubernetes.svc.cluster.local
     - IP:10.32.0.1
-    - IP:10.240.0.21
-    - IP:10.240.0.22
-    - IP:10.240.0.11
-    - IP:10.240.0.12
     - DNS:localhost
     - IP:127.0.0.1
     - DNS:etcd-1
     - DNS:etcd-2
     - DNS:etcd-1.example.com
     - DNS:etcd-2.example.com
-    - DNS:controller
-    - IP:10.240.0.20
-    - DNS:controller-1
-    - DNS:controller-2
-    - DNS:controller-1.example.com
-    - DNS:controller-2.example.com
-
+    - IP:10.240.0.21
+    - IP:10.240.0.22
+    - IP:10.240.0.11
+    - IP:10.240.0.12
   - key_path: ./crypto/service-account-key.pem
     cert_path: ./crypto/service-account.pem
     cn: service-accounts
+    subject:
+      O: Kubernetes  
     key_usage:
       - serverAuth
       - clientAuth

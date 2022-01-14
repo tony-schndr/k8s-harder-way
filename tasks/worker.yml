@@ -159,7 +159,7 @@
 - name: template /var/lib/kubelet/kubelet-config.yaml
   template:
     src: templates/kubelet-config.yaml.j2
-    dest: /var/lib/kubelet/kubelet-config.yaml
+    dest: /etc/kubernetes/config/kubelet-config.yaml
   when: inventory_hostname in groups['worker']
 
 - name: start service kubelet

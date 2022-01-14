@@ -19,13 +19,14 @@
     - name: Create certificate signing request (CSR) for CA certificate
       community.crypto.openssl_csr_pipe:
         privatekey_path: "{{ priv_key_path }}"
-        common_name: K8 Hardway CA
+        common_name: Kubernetes
         use_common_name_for_san: false  # since we do not specify SANs, don't use CN as a SAN
         basic_constraints:
           - 'CA:TRUE'
         basic_constraints_critical: yes
         key_usage:
           - keyCertSign
+          - keyEncipherment
         extended_key_usage:
           - serverAuth
           - clientAuth
@@ -51,6 +52,7 @@
         privatekey_path:  "{{ item.key_path }}"
         common_name: "{{ item.cn }}"
         subject_alt_name: "{{ item.sans }}"
+        subject: "{{ item.subject }}"
         key_usage:
           - keyEncipherment
          # - dataEncipherment
