@@ -62,11 +62,11 @@
   when: inventory_hostname in groups['worker']
   with_items:
     - url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubectl
-      path: /usr/bin
+      path: /usr/local/bin
     - url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kube-proxy
-      path: /usr/bin
+      path: /usr/local/bin
     - url: https://storage.googleapis.com/kubernetes-release/release/v1.21.0/bin/linux/amd64/kubelet
-      path: /usr/bin
+      path: /usr/local/bin
 
 - name:  Download worker binaries
   get_url:
@@ -93,7 +93,7 @@
   when: inventory_hostname in groups['worker']
   with_items:
     - src: /var/tmp/crictl-v1.21.0-linux-amd64.tar.gz
-      dest: /usr/bin
+      dest: /usr/local/bin
     - src: /var/tmp/cni-plugins-linux-amd64-v0.9.1.tgz
       dest:  /opt/cni/bin/
     - src: /var/tmp/containerd-1.4.4-linux-amd64.tar.gz
@@ -147,6 +147,16 @@
   copy:
     src: files/99-loopback.conf
     dest: /etc/cni/net.d/99-loopback.conf"
+  when: inventory_hostname in groups['worker']
+
+- name: Install a list of packages
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+    pkg:
+    - socat
+    - conntrack
+    - ipset
   when: inventory_hostname in groups['worker']
 
 - name: Copy kubelet.service

@@ -3,7 +3,7 @@ Description=Kubernetes Kube Proxy
 Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
-ExecStart=/usr/bin/kube-proxy \
+ExecStart=/usr/local/bin/kube-proxy \
   --config=/etc/kubernetes/config/kube-proxy-config.yaml
 Restart=on-failure
 RestartSec=5

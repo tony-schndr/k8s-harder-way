@@ -1,6 +1,6 @@
 # k8-harder-way
 
-Building a k8 bare metal cluster from scratch with Vagrant and Ansible by following https://github.com/kelseyhightower/kubernetes-the-hard-way and https://github.com/Praqma/LearnKubernetes/blob/master/kamran/Kubernetes-The-Hard-Way-on-BareMetal.md
+Building a k8 virtual cluster from scratch with Vagrant and Ansible by following https://github.com/kelseyhightower/kubernetes-the-hard-way.
 
 ## Setup
 
@@ -24,8 +24,6 @@ Run the play `create_crypto.yml` prior to `vagrant up` to create necessary crypt
 ```
 ansible-playbook create_crypto.yml
 ```
-
-
 ---
 ## Kubernetes configuration files for auth
 https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
