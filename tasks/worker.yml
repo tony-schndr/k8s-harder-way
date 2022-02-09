@@ -193,7 +193,7 @@
 
     # kube-proxy
     - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://10.240.0.21:6443 --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
-    - kubectl config set-credentials system:/var/lib/kubernetes/kube-proxy --client-certificate=/var/lib/kubernetes/kube-proxy.pem --client-key=/var/lib/kubernetes/kube-proxy-key.pem --embed-certs=true --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
+    - kubectl config set-credentials system:kube-proxy --client-certificate=/var/lib/kubernetes/kube-proxy.pem --client-key=/var/lib/kubernetes/kube-proxy-key.pem --embed-certs=true --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
     - kubectl config set-context default --cluster=kubernetes-the-hard-way --user=system:kube-proxy --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
     - kubectl config use-context default --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
 
