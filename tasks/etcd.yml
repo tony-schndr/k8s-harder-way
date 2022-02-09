@@ -53,7 +53,7 @@
     dest: /etc/systemd/system/etcd.service
   when: inventory_hostname in groups['etcd']
 
-- name: start service etcd
+- name: enable and start etcd service
   ansible.builtin.service:
     name: etcd
     state: started

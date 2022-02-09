@@ -1,11 +1,9 @@
-
-
-- name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
+- name: Disable SWAP on kubernetes workers
   shell: |
     swapoff -a
   when: inventory_hostname in groups['worker']
 
-- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+- name: Disable SWAP in fstab on kubernetes workers
   replace:
     path: /etc/fstab
     regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
@@ -156,7 +154,7 @@
 - name: start service containerd
   ansible.builtin.service:
     name:  containerd
-    state: restarted
+    state: started
     enabled: yes
   when: inventory_hostname in groups['worker']
 
@@ -173,10 +171,10 @@
     dest: /etc/kubernetes/config/kubelet-config.yaml
   when: inventory_hostname in groups['worker']
 
-- name: start service kubelet
+- name: enable and start kubelet service
   ansible.builtin.service:
     name:  kubelet
-    state: restarted
+    state: started
     enabled: yes
   when: inventory_hostname in groups['worker']
 
@@ -208,12 +206,12 @@
   copy:
     src:  files/kube-proxy-config.yaml
     dest: /etc/kubernetes/config/kube-proxy-config.yaml
-    mode: 0755
+    mode: 0644
   when:  inventory_hostname in groups['worker']
 
-- name: start service proxy
+- name: enable and start kube-proxy service
   ansible.builtin.service:
     name:  kube-proxy
-    state: restarted
+    state: started
     enabled: yes
   when: inventory_hostname in groups['worker']

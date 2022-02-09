@@ -53,49 +53,6 @@ Kubernetes control plane is running at https://127.0.0.1:6443
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-```bash
-cat <<EOF | kubectl apply --kubeconfig /etc/kubernetes/config/admin.kubeconfig -f -
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  annotations:
-    rbac.authorization.kubernetes.io/autoupdate: "true"
-  labels:
-    kubernetes.io/bootstrapping: rbac-defaults
-  name: system:kube-apiserver-to-kubelet
-rules:
-  - apiGroups:
-      - ""
-    resources:
-      - nodes/proxy
-      - nodes/stats
-      - nodes/log
-      - nodes/spec
-      - nodes/metrics
-    verbs:
-      - "*"
-EOF
-
-```
-
-```bash
-cat <<EOF | kubectl apply --kubeconfig /etc/kubernetes/config/admin.kubeconfig -f -
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: system:kube-apiserver
-  namespace: ""
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:kube-apiserver-to-kubelet
-subjects:
-  - apiGroup: rbac.authorization.k8s.io
-    kind: User
-    name: kubernetes
-EOF
-```
-
 ## Worker bootsrap
 
 Validate the worker nodes are running.
