@@ -130,12 +130,16 @@
       dest: /etc/containerd/config.toml
   when: inventory_hostname in groups['worker']
 
-- name: start service containerd
-  ansible.builtin.service:
-    name:  containerd
-    state: restarted
-    enabled: yes
+- name: Install a list of packages
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+    pkg:
+    - socat
+    - conntrack
+    - ipset
   when: inventory_hostname in groups['worker']
+
 
 - name: template CNI Networking
   template:
@@ -149,14 +153,11 @@
     dest: /etc/cni/net.d/99-loopback.conf"
   when: inventory_hostname in groups['worker']
 
-- name: Install a list of packages
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
-    pkg:
-    - socat
-    - conntrack
-    - ipset
+- name: start service containerd
+  ansible.builtin.service:
+    name:  containerd
+    state: restarted
+    enabled: yes
   when: inventory_hostname in groups['worker']
 
 - name: Copy kubelet.service
@@ -200,7 +201,7 @@
   copy:
     src:  files/kube-proxy.service
     dest: /etc/systemd/system/kube-proxy.service
-    mode: 0755
+    mode: 0644
   when:  inventory_hostname in groups['worker']
 
 - name: Copy kube-proxy-config.yaml

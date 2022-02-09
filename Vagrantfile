@@ -7,8 +7,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "bento/ubuntu-20.04"
 
   config.vm.provider :virtualbox do |v|
-    v.memory = 1024
-    v.cpus = 2
+    #v.memory = 4096
+    #v.cpus = 2
     v.linked_clone = true
   end
 
@@ -30,19 +30,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.vm.network :private_network, ip: opts[:ip]
       if opts[:name] == "worker-1" || opts[:name] == "worker-2"
         config.vm.provider :virtualbox do |vb|
-          vb.customize ["modifyvm", :id, "--memory", "1024"]
+          vb.customize ["modifyvm", :id, "--memory", "4096"]
           vb.customize ["modifyvm", :id, "--cpus", "2"]
         end
       end
       if opts[:name] == "controller-1" || opts[:name] == "controller-2"
         config.vm.provider :virtualbox do |vb|
-          vb.customize ["modifyvm", :id, "--memory", "512"]
+          vb.customize ["modifyvm", :id, "--memory", "4096"]
           vb.customize ["modifyvm", :id, "--cpus", "2"]
         end
       end
       if opts[:name] == "etcd-1" || opts[:name] == "etcd-2" || opts[:name] == "etcd-3"
         config.vm.provider :virtualbox do |vb|
-          vb.customize ["modifyvm", :id, "--memory", "512"]
+          vb.customize ["modifyvm", :id, "--memory", "4096"]
           vb.customize ["modifyvm", :id, "--cpus", "2"]
         end
       end

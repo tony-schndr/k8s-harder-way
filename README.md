@@ -52,3 +52,128 @@ Kubernetes control plane is running at https://127.0.0.1:6443
 
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
+
+```bash
+cat <<EOF | kubectl apply --kubeconfig /etc/kubernetes/config/admin.kubeconfig -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: system:kube-apiserver-to-kubelet
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/proxy
+      - nodes/stats
+      - nodes/log
+      - nodes/spec
+      - nodes/metrics
+    verbs:
+      - "*"
+EOF
+
+```
+
+```bash
+cat <<EOF | kubectl apply --kubeconfig /etc/kubernetes/config/admin.kubeconfig -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:kube-apiserver
+  namespace: ""
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:kube-apiserver-to-kubelet
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: kubernetes
+EOF
+```
+
+## Worker bootsrap
+
+Validate the worker nodes are running.
+```
+root@controller-1:~# kubectl get nodes --kubeconfig /etc/kubernetes/config/admin.kubeconfig
+NAME       STATUS   ROLES    AGE   VERSION
+worker-1   Ready    <none>   13m   v1.21.0
+worker-2   Ready    <none>   13m   v1.21.0
+```
+```
+system:kube-proxy
+
+cat <<EOF | kubectl apply --kubeconfig /etc/kubernetes/config/admin.kubeconfig -f -
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+kind: ClusterRole
+metadata:
+  name: kube-proxy-role
+rules:
+  -
+    apiGroups:
+      - ""
+    resources:
+      - endpoints
+      - events
+      - services
+      - nodes
+    verbs: ["get", "watch", "list"]
+  - nonResourceURLs: ["*"]
+    verbs: ["get", "watch", "list"]
+  -
+    apiGroups:
+      - ""
+    resources:
+      - events
+    verbs: ["*"]
+  - nonResourceURLs: ["*"]
+    verbs: ["*"]
+EOF
+
+```
+```
+cat <<EOF | kubectl apply --kubeconfig /etc/kubernetes/config/admin.kubeconfig -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:kube-proxy
+  namespace: ""
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:kube-proxy-role
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: kubernetes
+EOF
+```
+
+kubectl config set-cluster kubernetes-the-hard-way \
+--certificate-authority=crypto/ca.pem \
+--embed-certs=true \
+--server=https://10.240.0.21:6443
+
+kubectl config set-credentials admin \
+--client-certificate=crypto/admin.pem \
+--client-key=crypto/admin-key.pem
+
+kubectl config set-context kubernetes-the-hard-way \
+--cluster=kubernetes-the-hard-way \
+--user=admin
+
+kubectl config use-context kubernetes-the-hard-way
+
+```
+
+
+## Install core DNS Addon
+
+```
+kubectl apply -f https://storage.googleapis.com/kubernetes-the-hard-way/coredns-1.8.yaml --kubeconfig /etc/kubernetes/config/admin.kubeconfig
+```

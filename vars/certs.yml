@@ -61,9 +61,9 @@ certs:
     sans: []
   - key_path: ./crypto/kubernetes-key.pem
     cert_path: ./crypto/kubernetes.pem
-    cn: "*.example.com"
+    cn: "kubernetes"
     subject:
-      O: kubernetes
+      O: Kubernetes
     key_usage:
       - serverAuth
       - clientAuth
