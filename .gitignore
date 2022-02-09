@@ -2,3 +2,4 @@
 .vagrant/
 crypto/
 venv/
+admin.kubeconfig
