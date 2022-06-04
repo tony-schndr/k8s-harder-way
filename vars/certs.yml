@@ -78,12 +78,15 @@ certs:
     - IP:127.0.0.1
     - DNS:etcd-1
     - DNS:etcd-2
+    - DNS:etcd-3
     - DNS:etcd-1.example.com
     - DNS:etcd-2.example.com
+    - DNS:etcd-3.example.com
     - IP:10.240.0.21
     - IP:10.240.0.22
     - IP:10.240.0.11
     - IP:10.240.0.12
+    - IP:10.240.0.13
   - key_path: ./crypto/service-account-key.pem
     cert_path: ./crypto/service-account.pem
     cn: service-accounts

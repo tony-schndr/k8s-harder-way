@@ -18,6 +18,7 @@
       with_items:
         - 10.240.0.11     etcd-1.example.com       etcd-1
         - 10.240.0.12     etcd-2.example.com       etcd-2
+        - 10.240.0.13     etcd-3.example.com       etcd-3
         - 10.240.0.21     controller-1.example.com controller-1
         - 10.240.0.22     controller-2.example.com controller-2
         - 10.240.0.31     worker-1.example.com     worker-1

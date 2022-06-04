@@ -138,18 +138,21 @@
     - ipset
   when: inventory_hostname in groups['worker']
 
+- name: Create /etc/cni/net.d
+  file:
+    state: directory
+    path: /etc/cni/net.d
+# - name: template CNI Networking
+#   template:
+#     src: templates/10-bridge.conf.j2
+#     dest: /etc/cni/net.d/10-bridge.conf
+#   when: inventory_hostname in groups['worker']
 
-- name: template CNI Networking
-  template:
-    src: templates/10-bridge.conf.j2
-    dest: /etc/cni/net.d/10-bridge.conf
-  when: inventory_hostname in groups['worker']
-
-- name: Copy loopback network config
-  copy:
-    src: files/99-loopback.conf
-    dest: /etc/cni/net.d/99-loopback.conf"
-  when: inventory_hostname in groups['worker']
+# - name: Copy loopback network config
+#   copy:
+#     src: files/99-loopback.conf
+#     dest: /etc/cni/net.d/99-loopback.conf"
+#   when: inventory_hostname in groups['worker']
 
 - name: start service containerd
   ansible.builtin.service:

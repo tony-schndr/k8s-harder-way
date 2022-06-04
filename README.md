@@ -62,75 +62,126 @@ NAME       STATUS   ROLES    AGE   VERSION
 worker-1   Ready    <none>   13m   v1.21.0
 worker-2   Ready    <none>   13m   v1.21.0
 ```
+## Set admin.kubeconfg
 ```
-system:kube-proxy
+export KUBECONFIG=/etc/kubernetes/config/admin.kubeconfig
+```
+## Role Bindings
 
-cat <<EOF | kubectl apply --kubeconfig /etc/kubernetes/config/admin.kubeconfig -f -
-apiVersion: rbac.authorization.k8s.io/v1alpha1
+Create role binding for API Server to kubelet
+```
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: kube-proxy-role
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: system:kube-apiserver-to-kubelet
 rules:
-  -
-    apiGroups:
+  - apiGroups:
       - ""
     resources:
-      - endpoints
-      - events
-      - services
-      - nodes
-    verbs: ["get", "watch", "list"]
-  - nonResourceURLs: ["*"]
-    verbs: ["get", "watch", "list"]
-  -
-    apiGroups:
-      - ""
-    resources:
-      - events
-    verbs: ["*"]
-  - nonResourceURLs: ["*"]
-    verbs: ["*"]
+      - nodes/proxy
+      - nodes/stats
+      - nodes/log
+      - nodes/spec
+      - nodes/metrics
+    verbs:
+      - "*"
 EOF
 
-```
-```
-cat <<EOF | kubectl apply --kubeconfig /etc/kubernetes/config/admin.kubeconfig -f -
+cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: system:kube-proxy
+  name: system:kube-apiserver
   namespace: ""
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: system:kube-proxy-role
+  name: system:kube-apiserver-to-kubelet
 subjects:
   - apiGroup: rbac.authorization.k8s.io
     kind: User
     name: kubernetes
 EOF
 ```
-
-kubectl config set-cluster kubernetes-the-hard-way \
---certificate-authority=crypto/ca.pem \
---embed-certs=true \
---server=https://10.240.0.21:6443
-
-kubectl config set-credentials admin \
---client-certificate=crypto/admin.pem \
---client-key=crypto/admin-key.pem
-
-kubectl config set-context kubernetes-the-hard-way \
---cluster=kubernetes-the-hard-way \
---user=admin
-
-kubectl config use-context kubernetes-the-hard-way
+## Network addon
 
 ```
-
-
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+```
 ## Install core DNS Addon
 
 ```
 kubectl apply -f https://storage.googleapis.com/kubernetes-the-hard-way/coredns-1.8.yaml --kubeconfig /etc/kubernetes/config/admin.kubeconfig
 ```
+
+
+Smoke test
+---
+
+Create a deployment and scale it to 2 + pods, check that pods are deployed between both workers
+```
+root@controller-1:~# kubectl create deployment nginx --image=nginx:latest
+deployment.apps/nginx created
+
+root@controller-1:~# kubectl scale deployment nginx --replicas=5
+deployment.apps/nginx scaled
+
+root@controller-1:~# kubectl get pods -o wide
+NAME                     READY   STATUS    RESTARTS   AGE   IP          NODE       NOMINATED NODE   READINESS GATES
+nginx-7c658794b9-5fl2x   1/1     Running   0          44s   10.32.0.5   worker-1   <none>           <none>
+nginx-7c658794b9-87s8p   1/1     Running   0          89s   10.44.0.1   worker-2   <none>           <none>
+nginx-7c658794b9-9qg8g   1/1     Running   0          44s   10.32.0.4   worker-1   <none>           <none>
+nginx-7c658794b9-hn7dq   1/1     Running   0          44s   10.44.0.3   worker-2   <none>           <none>
+nginx-7c658794b9-nn54d   1/1     Running   0          44s   10.44.0.2   worker-2   <none>           <none>
+```
+
+Expose the nginx deployment
+```
+root@controller-1:~# kubectl expose deployment  nginx --target-port 80 --port 8080
+service/nginx exposed
+```
+
+Check network connectivity, run this pod that has network troubleshooting tools installed. 
+```
+kubectl run tmp-shell --rm -i --tty --image nicolaka/netshoot -- /bin/bash
+```
+
+Once at the bash prompt in the helper pod, curl the nginx service, validate html is returned.
+```
+bash-5.1# curl nginx:8080
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+
+### Current issues
+kube-schedule is unable to list resources, forbidden user.  Need to create ClusterRole and ClusterRoleBinding for User "system:kube-scheduler"
+
+Connectivity from test pod -> Service -> Pod giving connection refused, not sure if the issue is pod -> service, or service -> pod
+
+kube-proxy is getting connection refused when trying to connect to API Server.  Additionally kube-poxy is unable to write to api server.

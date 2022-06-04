@@ -16,6 +16,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   boxes = [
     { :name => "etcd-1", :ip => "10.240.0.11" },
     { :name => "etcd-2", :ip => "10.240.0.12" },
+    { :name => "etcd-3", :ip => "10.240.0.13" },
     # { :name => "controller", :ip => "10.240.0.20" },
     { :name => "controller-1", :ip => "10.240.0.21" },
     { :name => "controller-2", :ip => "10.240.0.22" },
@@ -30,19 +31,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.vm.network :private_network, ip: opts[:ip]
       if opts[:name] == "worker-1" || opts[:name] == "worker-2"
         config.vm.provider :virtualbox do |vb|
-          vb.customize ["modifyvm", :id, "--memory", "4096"]
+          vb.customize ["modifyvm", :id, "--memory", "2048"]
           vb.customize ["modifyvm", :id, "--cpus", "2"]
         end
       end
       if opts[:name] == "controller-1" || opts[:name] == "controller-2"
         config.vm.provider :virtualbox do |vb|
-          vb.customize ["modifyvm", :id, "--memory", "4096"]
+          vb.customize ["modifyvm", :id, "--memory", "2048"]
           vb.customize ["modifyvm", :id, "--cpus", "2"]
         end
       end
       if opts[:name] == "etcd-1" || opts[:name] == "etcd-2" || opts[:name] == "etcd-3"
         config.vm.provider :virtualbox do |vb|
-          vb.customize ["modifyvm", :id, "--memory", "4096"]
+          vb.customize ["modifyvm", :id, "--memory", "2048"]
           vb.customize ["modifyvm", :id, "--cpus", "2"]
         end
       end
