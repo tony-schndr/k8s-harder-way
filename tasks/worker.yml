@@ -3,6 +3,17 @@
     swapoff -a
   when: inventory_hostname in groups['worker']
 
+- name: Enable port forwarding on nodes
+  ansible.builtin.lineinfile:
+    line: 'net.ipv4.ip_forward=1'
+    path: /etc/sysctl.conf
+  when: inventory_hostname in groups['worker']
+
+- name: Apply port forwarding change
+  ansible.builtin.command:
+    cmd: sysctl -p /etc/sysctl.conf
+  when: inventory_hostname in groups['worker']
+
 - name: Disable SWAP in fstab on kubernetes workers
   replace:
     path: /etc/fstab
@@ -142,17 +153,6 @@
   file:
     state: directory
     path: /etc/cni/net.d
-# - name: template CNI Networking
-#   template:
-#     src: templates/10-bridge.conf.j2
-#     dest: /etc/cni/net.d/10-bridge.conf
-#   when: inventory_hostname in groups['worker']
-
-# - name: Copy loopback network config
-#   copy:
-#     src: files/99-loopback.conf
-#     dest: /etc/cni/net.d/99-loopback.conf"
-#   when: inventory_hostname in groups['worker']
 
 - name: start service containerd
   ansible.builtin.service:
@@ -187,13 +187,13 @@
   when: inventory_hostname in groups['worker']
   with_items:
     # kubecofnig
-    - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://10.240.0.21:6443 --kubeconfig=/etc/kubernetes/config/kubeconfig
+    - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://192.168.1.21:6443 --kubeconfig=/etc/kubernetes/config/kubeconfig
     - kubectl config set-credentials system:node:{{ inventory_hostname }} --client-certificate=/var/lib/kubernetes/{{ inventory_hostname }}.pem --client-key=/var/lib/kubernetes/{{ inventory_hostname }}-key.pem --embed-certs=true --kubeconfig=/etc/kubernetes/config/kubeconfig
     - kubectl config set-context default --cluster=kubernetes-the-hard-way --user=system:node:{{ inventory_hostname }} --kubeconfig=/etc/kubernetes/config/kubeconfig
     - kubectl config use-context default --kubeconfig=/etc/kubernetes/config/kubeconfig
 
     # kube-proxy
-    - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://10.240.0.21:6443 --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
+    - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://192.168.1.21:6443 --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
     - kubectl config set-credentials system:kube-proxy --client-certificate=/var/lib/kubernetes/kube-proxy.pem --client-key=/var/lib/kubernetes/kube-proxy-key.pem --embed-certs=true --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
     - kubectl config set-context default --cluster=kubernetes-the-hard-way --user=system:kube-proxy --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
     - kubectl config use-context default --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig

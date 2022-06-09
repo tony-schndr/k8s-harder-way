@@ -7,7 +7,7 @@
     - vars/certs.yml
 
   vars:
-    pod_cidr: 172.16.0.0/16
+    pod_cidr: 10.32.0.0/12
 
   tasks:
     #- import_tasks: plays/crypto.yml
@@ -16,14 +16,14 @@
         line: "{{ item }}"
         path: /etc/hosts
       with_items:
-        - 10.240.0.11     etcd-1.example.com       etcd-1
-        - 10.240.0.12     etcd-2.example.com       etcd-2
-        - 10.240.0.13     etcd-3.example.com       etcd-3
-        - 10.240.0.21     controller-1.example.com controller-1
-        - 10.240.0.22     controller-2.example.com controller-2
-        - 10.240.0.31     worker-1.example.com     worker-1
-        - 10.240.0.32     worker-2.example.com     worker-2
-        - 10.240.0.200	lb.example.com		lb
+        - 192.168.1.11     etcd-1.example.com       etcd-1
+        - 192.168.1.12     etcd-2.example.com       etcd-2
+        - 192.168.1.13     etcd-3.example.com       etcd-3
+        - 192.168.1.21     controller-1.example.com controller-1
+        - 192.168.1.22     controller-2.example.com controller-2
+        - 192.168.1.31     worker-1.example.com     worker-1
+        - 192.168.1.32     worker-2.example.com     worker-2
+        - 192.168.1.200	lb.example.com		lb
 
     - import_tasks: tasks/etcd.yml
     - import_tasks: tasks/control.yml

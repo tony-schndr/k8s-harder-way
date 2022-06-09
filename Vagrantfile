@@ -4,47 +4,46 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "bento/ubuntu-20.04"
-
-  config.vm.provider :virtualbox do |v|
-    #v.memory = 4096
-    #v.cpus = 2
-    v.linked_clone = true
+  config.vm.box = "generic/ubuntu2010"
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.qemu_use_session = false
   end
-
   # Define VMs with static private IP addresses.
+                            
+                            
+                            
   boxes = [
-    { :name => "etcd-1", :ip => "10.240.0.11" },
-    { :name => "etcd-2", :ip => "10.240.0.12" },
-    { :name => "etcd-3", :ip => "10.240.0.13" },
-    # { :name => "controller", :ip => "10.240.0.20" },
-    { :name => "controller-1", :ip => "10.240.0.21" },
-    { :name => "controller-2", :ip => "10.240.0.22" },
-    { :name => "worker-1", :ip => "10.240.0.31" },
-    { :name => "worker-2", :ip => "10.240.0.32"},
+    { :name => "etcd-1", :ip => "192.168.1.11"}, 
+    { :name => "etcd-2", :ip => "192.168.1.12"},
+    { :name => "etcd-3", :ip => "192.168.1.13"},
+    # { :name => "controller", :ip => "192.168.1.20" },
+    { :name => "controller-1", :ip => "192.168.1.21"},
+    { :name => "controller-2", :ip => "192.168.1.22"},
+    { :name => "worker-1", :ip => "192.168.1.31",},
+    { :name => "worker-2", :ip => "192.168.1.32",}
   ]
 
   # Provision each of the VMs.
   boxes.each do |opts|
     config.vm.define opts[:name] do |config|
       config.vm.hostname = opts[:name]
-      config.vm.network :private_network, ip: opts[:ip]
+      config.vm.network :private_network, ip: opts[:ip], :libvirt__netmask => '255.255.255.0',:libvirt__network_name => 'k8shwnetwork'
       if opts[:name] == "worker-1" || opts[:name] == "worker-2"
-        config.vm.provider :virtualbox do |vb|
-          vb.customize ["modifyvm", :id, "--memory", "2048"]
-          vb.customize ["modifyvm", :id, "--cpus", "2"]
+        config.vm.provider :libvirt do |libvirt|
+          libvirt.cpus = 2
+          libvirt.memory = 2048
         end
       end
       if opts[:name] == "controller-1" || opts[:name] == "controller-2"
-        config.vm.provider :virtualbox do |vb|
-          vb.customize ["modifyvm", :id, "--memory", "2048"]
-          vb.customize ["modifyvm", :id, "--cpus", "2"]
+        config.vm.provider :libvirt do |libvirt|
+          libvirt.cpus = 2
+          libvirt.memory = 2048
         end
       end
       if opts[:name] == "etcd-1" || opts[:name] == "etcd-2" || opts[:name] == "etcd-3"
-        config.vm.provider :virtualbox do |vb|
-          vb.customize ["modifyvm", :id, "--memory", "2048"]
-          vb.customize ["modifyvm", :id, "--cpus", "2"]
+        config.vm.provider :libvirt do |libvirt|
+          libvirt.cpus = 2
+          libvirt.memory = 2048
         end
       end
       # Provision all the VMs in parallel using Ansible after last VM is up.

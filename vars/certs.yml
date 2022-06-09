@@ -13,7 +13,7 @@ certs:
       - clientAuth
     sans:
     - DNS:worker-1
-    - DNS:10.240.0.31
+    - DNS:192.168.1.31
   - key_path: ./crypto/worker-2-key.pem
     cert_path: ./crypto/worker-2.pem
     cn: system:node:worker-2
@@ -24,7 +24,7 @@ certs:
       - clientAuth
     sans:
     - DNS:worker-2
-    - DNS:10.240.0.32
+    - DNS:192.168.1.32
   - key_path: ./crypto/admin-key.pem
     cert_path: ./crypto/admin.pem
     cn: admin
@@ -74,6 +74,7 @@ certs:
     - DNS:kubernetes.default.svc.cluster
     - DNS:kubernetes.svc.cluster.local
     - IP:10.32.0.1
+    - IP:10.96.0.1
     - DNS:localhost
     - IP:127.0.0.1
     - DNS:etcd-1
@@ -82,11 +83,11 @@ certs:
     - DNS:etcd-1.example.com
     - DNS:etcd-2.example.com
     - DNS:etcd-3.example.com
-    - IP:10.240.0.21
-    - IP:10.240.0.22
-    - IP:10.240.0.11
-    - IP:10.240.0.12
-    - IP:10.240.0.13
+    - IP:192.168.1.21
+    - IP:192.168.1.22
+    - IP:192.168.1.11
+    - IP:192.168.1.12
+    - IP:192.168.1.13
   - key_path: ./crypto/service-account-key.pem
     cert_path: ./crypto/service-account.pem
     cn: service-accounts

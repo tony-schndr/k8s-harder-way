@@ -180,8 +180,3 @@ Commercial support is available at
 ```
 
 ### Current issues
-kube-schedule is unable to list resources, forbidden user.  Need to create ClusterRole and ClusterRoleBinding for User "system:kube-scheduler"
-
-Connectivity from test pod -> Service -> Pod giving connection refused, not sure if the issue is pod -> service, or service -> pod
-
-kube-proxy is getting connection refused when trying to connect to API Server.  Additionally kube-poxy is unable to write to api server.
