@@ -111,7 +111,7 @@ EOF
 ## Network addon
 
 ```
-kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+kubectl apply -f https://raw.githubusercontent.com/tony-schndr/k8s-harder-way/master/files/coredns-1.8.yaml
 ```
 ## Install core DNS Addon
 
