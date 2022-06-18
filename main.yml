@@ -23,8 +23,8 @@
         - 192.168.1.22     controller-2.example.com controller-2
         - 192.168.1.31     worker-1.example.com     worker-1
         - 192.168.1.32     worker-2.example.com     worker-2
-        - 192.168.1.200	lb.example.com		lb
+        - 192.168.1.200	   lb.example.com		        lb
 
     - import_tasks: tasks/etcd.yml
-    - import_tasks: tasks/control.yml
+    - import_tasks: tasks/controller.yml
     - import_tasks: tasks/worker.yml
