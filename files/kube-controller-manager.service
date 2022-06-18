@@ -6,8 +6,6 @@ Documentation=https://github.com/kubernetes/kubernetes
 ExecStart=/usr/bin/kube-controller-manager \
   --bind-address=0.0.0.0 \
   --cluster-name=kubernetes \
-  --allocate-node-cidrs \
-  --cluster-cidr=10.32.0.0/12 \
   --cluster-signing-cert-file=/var/lib/kubernetes/ca.pem \
   --cluster-signing-key-file=/var/lib/kubernetes/ca-key.pem \
   --kubeconfig=/etc/kubernetes/config/kube-controller-manager.kubeconfig \
