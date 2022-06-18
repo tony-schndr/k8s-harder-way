@@ -186,7 +186,7 @@
     cmd: "{{ item }}"
   when: inventory_hostname in groups['worker']
   with_items:
-    # kubecofnig
+    # kubeconfig
     - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://192.168.1.21:6443 --kubeconfig=/etc/kubernetes/config/kubeconfig
     - kubectl config set-credentials system:node:{{ inventory_hostname }} --client-certificate=/var/lib/kubernetes/{{ inventory_hostname }}.pem --client-key=/var/lib/kubernetes/{{ inventory_hostname }}-key.pem --embed-certs=true --kubeconfig=/etc/kubernetes/config/kubeconfig
     - kubectl config set-context default --cluster=kubernetes-the-hard-way --user=system:node:{{ inventory_hostname }} --kubeconfig=/etc/kubernetes/config/kubeconfig
