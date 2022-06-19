@@ -23,8 +23,6 @@
     - ./crypto/service-account.pem
     - ./crypto/kube-scheduler-key.pem
     - ./crypto/kube-scheduler.pem
-    - ./crypto/kube-proxy-key.pem
-    - ./crypto/kube-proxy.pem
     - ./crypto/kube-controller-manager-key.pem
     - ./crypto/kube-controller-manager.pem
     - ./crypto/admin-key.pem
@@ -73,11 +71,6 @@
   ansible.builtin.command:
     cmd: "{{ item }}"
   with_items:
-    # # kube-proxy config
-    # - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://127.0.0.1:6443 --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
-    # - kubectl config set-credentials system:kube-proxy --client-certificate=/var/lib/kubernetes/kube-proxy.pem --client-key=/var/lib/kubernetes/kube-proxy-key.pem --embed-certs=true --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
-    # - kubectl config set-context default --cluster=kubernetes-the-hard-way --user=system:kube-proxy --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
-    # - kubectl config use-context default --kubeconfig=/etc/kubernetes/config/kube-proxy.kubeconfig
     # kube-controller-manager config
     - kubectl config set-cluster kubernetes-the-hard-way --certificate-authority=/var/lib/kubernetes/ca.pem --embed-certs=true --server=https://127.0.0.1:6443 --kubeconfig=/etc/kubernetes/config/kube-controller-manager.kubeconfig
     - kubectl config set-credentials system:kube-controller-manager --client-certificate=/var/lib/kubernetes/kube-controller-manager.pem --client-key=/var/lib/kubernetes/kube-controller-manager-key.pem --embed-certs=true --kubeconfig=/etc/kubernetes/config/kube-controller-manager.kubeconfig
