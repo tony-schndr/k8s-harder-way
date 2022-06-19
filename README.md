@@ -1,74 +1,53 @@
-# k8-harder-way
+# k8s-harder-way
+Building a k8s virtual cluster from scratch with Vagrant and Ansible by following https://github.com/kelseyhightower/kubernetes-the-hard-way.
 
-Building a k8 virtual cluster from scratch with Vagrant and Ansible by following https://github.com/kelseyhightower/kubernetes-the-hard-way.
+## Pre reqs
+Ensure the following software are installed on local machine
+- vagrant
+- libvirt
+- ansible
 
-## Setup
-
-Ensure vagrant, virtual box, and ansible are installed on the host.  This project was built on `Ubuntu 20.04.3 LTS`
-
-Install ansible in a virtual environment from devel branch.
-```
-python3 -m venv venv
-. ./venv/bin/activate
-pip install https://github.com/ansible/ansible/archive/devel.tar.gz --disable-pip-version-check
-```
-
----
 ## Certificates
 https://kubernetes.io/docs/concepts/security/controlling-access/
 
 https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/04-certificate-authority.md
 
-Run the play `create_crypto.yml` prior to `vagrant up` to create necessary crypto objects.  This play will quickly generate a Certificate Authority and every Certificate needed to boot strap the cluster.  Certificate variables such as extended key usage, key usage, CN, etc... are all stored in `var/certs.yml` and can be tweaked if desired.  When regenerate crypto delete the `crypto/` directory and rerun `create_crypto.yml`, rinse and repeat if needed.  To reapply crypto settings to the cluster run `vagrant provision`.
+Run the play `create_crypto.yml` prior to `vagrant up` to create necessary crypto objects.  This play will quickly generate a Certificate Authority and every Certificate needed to boot strap the cluster.  Certificate variables such as extended key usage, key usage, CN, etc... are all stored in `var/certs.yml` and can be tweaked if desired.  Regenerate crypto by deleting the `crypto/` directory and rerun `create_crypto.yml`.
 
 ```
 ansible-playbook create_crypto.yml
 ```
----
-## Kubernetes configuration files for auth
-https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
 
-https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/05-kubernetes-configuration-files.md
+## Provision Nodes
+Bring up the nodes using `vagrant up` this will provision:
 
-## etcd bootstrap
-Create certificates with SANs for all possible ways cluster members to call each other ie DNS and IP. For simplicity one cert is used between all etcd cluster members.
+- 3 etcd nodes
+- 2 controller nodes
+- 2 worker nodes
 
-SANs Example:
-```
-X509v3 Subject Alternative Name:
-                DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster, DNS:kubernetes.svc.cluster.local, IP Address:10.32.0.1, IP Address:10.240.0.21, IP Address:10.240.0.22, IP Address:10.240.0.11, IP Address:10.240.0.12, IP Address:10.240.0.13, DNS:localhost, IP Address:127.0.0.1, DNS:etcd-1, DNS:etcd-2, DNS:etcd-3
-```
-Extended Key Usage `serverAuth` and `clientAuth`
+The ansible play is executed after VMs are up from a high level it will:
 
-Distribute the cert/key pair and CA chain to all etcd nodes.  Create `etcd.service` on all nodes, this is templated in `templates/etcd.service.j2`.
+- Add the IP/hostname of all nodes to `/etc/hosts` on all nodes.
+- Copy certs for cluster components auth
+- Download, configure, and start kubernetes components as systemd services(etcd, kubelet, kube-apiserver, kube-controller-manager, kube-scheduler, kube-proxy, container runtime)
+- Install required packages for workers (conntrack)
+- Generate kubeconfig for components to connect to the API Server
+- Disable SWAP and enable port forwarding on workers
 
+## Configure Cluster
 
-## Controller bootstrap
+Become root `sudo -i`
 
 Validate the control plane is running.
 ```
-root@controller-2:~# kubectl cluster-info --kubeconfig /etc/kubernetes/config/admin.kubeconfig
+root@controller-2:~# kubectl cluster-info
 Kubernetes control plane is running at https://127.0.0.1:6443
 
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 
-## Worker bootsrap
-
-Validate the worker nodes are running.
-```
-root@controller-1:~# kubectl get nodes --kubeconfig /etc/kubernetes/config/admin.kubeconfig
-NAME       STATUS   ROLES    AGE   VERSION
-worker-1   Ready    <none>   13m   v1.21.0
-worker-2   Ready    <none>   13m   v1.21.0
-```
-## Set admin.kubeconfg
-```
-export KUBECONFIG=/etc/kubernetes/config/admin.kubeconfig
-```
-## Role Bindings
-
-Create role binding for API Server to kubelet
+Create cluster role and cluster role binding for API Server to connect nodes.
+Required for retrieving pod logs and exec
 ```
 cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
@@ -108,20 +87,28 @@ subjects:
     name: kubernetes
 EOF
 ```
-## Network addon
-
+Install weave network and CoreDNS
+```
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+```
 ```
 kubectl apply -f https://raw.githubusercontent.com/tony-schndr/k8s-harder-way/master/files/coredns-1.8.yaml
 ```
-## Install core DNS Addon
 
+Once network/coredns are up nodes should become Ready
 ```
-kubectl apply -f https://storage.googleapis.com/kubernetes-the-hard-way/coredns-1.8.yaml --kubeconfig /etc/kubernetes/config/admin.kubeconfig
+root@controller-1:~# kubectl get nodes -w
+NAME       STATUS     ROLES    AGE   VERSION
+worker-1   NotReady   <none>   18s   v1.21.0
+worker-2   NotReady   <none>   18s   v1.21.0
+worker-1   NotReady   <none>   79s   v1.21.0
+worker-1   Ready      <none>   80s   v1.21.0
+worker-2   Ready      <none>   80s   v1.21.0
+worker-1   Ready      <none>   80s   v1.21.0
+worker-2   Ready      <none>   80s   v1.21.0
 ```
 
-
-Smoke test
----
+## Smoke test
 
 Create a deployment and scale it to 2 + pods, check that pods are deployed between both workers
 ```
@@ -179,4 +166,13 @@ Commercial support is available at
 </html>
 ```
 
+Check kubectl port-forwarding
+```
+kubectl port-forward service/nginx 8080:8080
+```
+
+In another shell on the same machine `kubectl port-forward` was executed, `curl localhost:8080`
+
 ### Current issues
+
+Pods can't resolve services external to cluster.
