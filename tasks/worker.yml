@@ -139,14 +139,15 @@
       dest: /etc/containerd/config.toml
   when: inventory_hostname in groups['worker']
 
-- name: Install a list of packages
+- name: Install packages required for network magic
   apt:
     update_cache: yes
     cache_valid_time: 3600
     pkg:
-    - socat
     - conntrack
-    - ipset
+    # don't seem to be needed, haven't found anything broke yet with networking.
+    #- socat
+    #- ipset
   when: inventory_hostname in groups['worker']
 
 - name: Create /etc/cni/net.d
