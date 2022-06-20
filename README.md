@@ -21,8 +21,7 @@ ansible-playbook create_crypto.yml
 ## Provision Nodes
 Bring up the nodes using `vagrant up` this will provision:
 
-- 3 etcd nodes
-- 2 controller nodes
+- 3 controller nodes running etcd and kube components
 - 2 worker nodes
 
 The ansible play is executed after VMs are up from a high level it will:
@@ -172,6 +171,12 @@ kubectl port-forward service/nginx 8080:8080
 ```
 
 In another shell on the same machine `kubectl port-forward` was executed, `curl localhost:8080`
+
+
+## Helpful commands
+```
+ETCDCTL_API=3 etcdctl endpoint status --write-out=table --endpoints=controller-1:2379,controller-2:2379,controller-3:2379 --cacert=/var/lib/kubernetes/ca.pem --cert=/var/lib/kubernetes/kubernetes.pem --key=/var/lib/kubernetes/kubernetes-key.pem
+```
 
 ### Current issues
 

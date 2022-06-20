@@ -77,22 +77,20 @@ certs:
     - IP:10.96.0.1
     - DNS:localhost
     - IP:127.0.0.1
-    - DNS:etcd-1
-    - DNS:etcd-2
-    - DNS:etcd-3
-    - DNS:etcd-1.example.com
-    - DNS:etcd-2.example.com
-    - DNS:etcd-3.example.com
+    - DNS:controller-1
+    - DNS:controller-2
+    - DNS:controller-3
+    - DNS:controller-1.example.com
+    - DNS:controller-2.example.com
+    - DNS:controller-3.example.com
     - IP:192.168.1.21
     - IP:192.168.1.22
-    - IP:192.168.1.11
-    - IP:192.168.1.12
-    - IP:192.168.1.13
+    - IP:192.168.1.23
   - key_path: ./crypto/service-account-key.pem
     cert_path: ./crypto/service-account.pem
     cn: service-accounts
     subject:
-      O: Kubernetes  
+      O: Kubernetes
     key_usage:
       - serverAuth
       - clientAuth

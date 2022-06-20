@@ -9,11 +9,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     libvirt.qemu_use_session = false
   end
   boxes = [
-    { :name => "etcd-1", :ip => "192.168.1.11"}, 
-    { :name => "etcd-2", :ip => "192.168.1.12"},
-    { :name => "etcd-3", :ip => "192.168.1.13"},
     { :name => "controller-1", :ip => "192.168.1.21"},
     { :name => "controller-2", :ip => "192.168.1.22"},
+    { :name => "controller-3", :ip => "192.168.1.23"},
     { :name => "worker-1", :ip => "192.168.1.31",},
     { :name => "worker-2", :ip => "192.168.1.32",}
   ]
@@ -28,13 +26,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           libvirt.memory = 2048
         end
       end
-      if opts[:name] == "controller-1" || opts[:name] == "controller-2"
-        config.vm.provider :libvirt do |libvirt|
-          libvirt.cpus = 2
-          libvirt.memory = 2048
-        end
-      end
-      if opts[:name] == "etcd-1" || opts[:name] == "etcd-2" || opts[:name] == "etcd-3"
+      if opts[:name] == "controller-1" || opts[:name] == "controller-2" || opts[:name] == "controller-3"
         config.vm.provider :libvirt do |libvirt|
           libvirt.cpus = 2
           libvirt.memory = 2048
@@ -49,9 +41,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           ansible.become = true
           ansible.groups = {
             "kubernetes" => ["worker-1", "worker-2",
-                             "controller-1", "controller-2", "etcd-1", "etcd-2", "etcd-3"],
-            "controller" => ["controller-1", "controller-2"],
-            "etcd" => ["etcd-1", "etcd-2", "etcd-3"],
+                             "controller-1", "controller-2","controller-3", "etcd-1", "etcd-2", "etcd-3"],
+            "controller" => ["controller-1", "controller-2", "controller-3"],
+            "etcd" => ["controller-1", "controller-2", "controller-3"],
             "worker" => ["worker-1", "worker-2"],
             "worker:vars" => {
               kubernetes_role: "worker",
