@@ -8,9 +8,9 @@
 
   vars:
     pod_cidr: 10.32.0.0/12
+    k8s_version: v1.23.8
 
   tasks:
-    #- import_tasks: plays/crypto.yml
     - name: add hosts to /etc/hosts
       lineinfile:
         line: "{{ item }}"
