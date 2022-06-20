@@ -108,6 +108,20 @@
     enabled: yes
   when: inventory_hostname in groups['controller']
 
+- name: Create .vimrc
+  ansible.builtin.file:
+    path: /root/.vimrc
+    state: touch
+
+- name: set vim config
+  ansible.builtin.lineinfile:
+    line: "{{ item }}"
+    path: /root/.vimrc
+  with_items:
+    - set tabstop=2
+    - set expandtab
+    - set shiftwidth=2
+
 - name: Add admin.kubeconfig to .bashrc
   ansible.builtin.lineinfile:
     line: "export KUBECONFIG=/etc/kubernetes/config/admin.kubeconfig"
