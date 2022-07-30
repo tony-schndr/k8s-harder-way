@@ -89,8 +89,6 @@ EOF
 Install weave network and CoreDNS
 ```
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-```
-```
 kubectl apply -f https://raw.githubusercontent.com/tony-schndr/k8s-harder-way/master/files/coredns-1.8.yaml
 ```
 
@@ -177,7 +175,3 @@ In another shell on the same machine `kubectl port-forward` was executed, `curl 
 ```
 ETCDCTL_API=3 etcdctl endpoint status --write-out=table --endpoints=controller-1:2379,controller-2:2379,controller-3:2379 --cacert=/var/lib/kubernetes/ca.pem --cert=/var/lib/kubernetes/kubernetes.pem --key=/var/lib/kubernetes/kubernetes-key.pem
 ```
-
-### Current issues
-
-Pods can't resolve services external to cluster.
